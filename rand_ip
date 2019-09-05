@@ -3,164 +3,209 @@
 #********************************#
 #                                #
 #    Written by Andras Marton    #
-#         August 21, 2019        #
+#         August 22, 2019        #
 #                                #
 #********************************#
 
 # Random IP and CIDR subnet mask generator
-# v1.2
+# v2.1
 
-# help menu
+# Usage instructions
 function usage() {
-echo "Usage: rand_ip [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
-}
+  echo "Usage: rand_ip [-q] [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
+ }
+
+# Help menu
+function help() {
+# Variables to bold the arguments 
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-function help() {
-echo "Usage: rand_ip [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
-echo "rand_ip generates random IPv4 addresses with CIDR mask."
-echo -e "CIDR masks are generated for the third and fourth octet.\n"
-echo -e "The options are as follows:\n"
-
-echo -e "${bold}-a${normal} \t Generates a given number of Class A addresses\n"
-
-echo -e "${bold}-b${normal} \t Generates a given number of Class B addresses\n"
-
-echo -e "${bold}-c${normal} \t Generates a given number of Class C addresses\n"
-
-echo -e "${bold}-d${normal} \t Generates a given number of Class D addresses\n"
-
-echo -e "${bold}-e${normal} \t Generates a given number of Class E addresses\n"
-
-echo -e "${bold}-n${normal} \t Generates a given number of random addresses 
-      \t    through all IPv4 classes\n"
-
-echo -e "${bold}-h${normal} \t Shows this help menu\n"
+# Print the following explanation for arg options
+  echo "Usage: rand_ip [-q] [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
+  echo "rand_ip generates random IPv4 addresses with CIDR mask."
+  echo -e "CIDR masks are generated for the third and fourth octet.\n"
+  echo -e "The options are as follows:\n"
+  echo -e "${bold}-q${normal} \t Quiet mode. Removes header for printed result\n"
+  echo -e "${bold}-a${normal} \t Generates a given number of Class A addresses\n"
+  echo -e "${bold}-b${normal} \t Generates a given number of Class B addresses\n"
+  echo -e "${bold}-c${normal} \t Generates a given number of Class C addresses\n"
+  echo -e "${bold}-d${normal} \t Generates a given number of Class D addresses\n"
+  echo -e "${bold}-e${normal} \t Generates a given number of Class E addresses\n"
+  echo -e "${bold}-n${normal} \t Generates a given number of random addresses
+      \t through all IPv4 classes\n"
+  echo -e "${bold}-h${normal} \t Shows this help menu\n"
 }
 
+# Function to generate random IP addresses from 
+# a pool of all classes
 function generate_ip() {
   for i in $(eval echo {1..${OPTARG}}); do
-    subnetmask=$((RANDOM%16+15))
-    ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 256))" \
-      "$((RANDOM % 256))" "$((RANDOM % 256))" \
-      "$((RANDOM % 256))")
-      echo $ip"/"$subnetmask
+     subnetmask=$((RANDOM%16+15))
+     ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 256))" \
+       "$((RANDOM % 256))" "$((RANDOM % 256))" \
+       "$((RANDOM % 256))")
+       echo $ip"/"$subnetmask
   done
 }
 
-function class_a() {
-  for i in $(eval echo {1..${OPTARG}}); do  
-    subnetmask=$((RANDOM%16+15))
-    ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 127))" \
-      "$((RANDOM % 256))" "$((RANDOM % 256))" \
-      "$((RANDOM % 256))")
-      echo $ip"/"$subnetmask
-done
+# Function to generate Class A addresses
+ function class_a() {
+   for i in $(eval echo {1..${OPTARG}}); do  
+     subnetmask=$((RANDOM%16+15))
+     ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 127))" \
+       "$((RANDOM % 256))" "$((RANDOM % 256))" \
+       "$((RANDOM % 256))")
+       echo $ip"/"$subnetmask
+ done
 }
 
+# Function to generate Class B addresses
 function class_b() {
-  for i in $(eval echo {1..$OPTARG}}); do
-
-  local FLOOR=128
-  local RANGE=191
-  number=0
-
-  while [ "$number" -le $FLOOR ]; do
-      number=$RANDOM
-      let "number %= $RANGE"
-  done
-  
-      subnetmask=$((RANDOM%16+15))
-      ip=$(printf "$number.%d.%d.%d" \
-        "$((RANDOM % 256))" "$((RANDOM % 256))" \
-        "$((RANDOM % 256))")
-        echo $ip"/"$subnetmask
-  done
+   for i in $(eval echo {1..$OPTARG}}); do
+     # Local variables to store IP class range
+     local FLOOR=128
+     local RANGE=191
+     number=0
+     while [ "$number" -le $FLOOR ]; do
+       number=$RANDOM
+       let "number %= $RANGE"
+     done
+     subnetmask=$((RANDOM%16+15))   
+     ip=$(printf "$number.%d.%d.%d" \     
+       "$((RANDOM % 256))" "$((RANDOM % 256))" \
+       "$((RANDOM % 256))")
+       echo $ip"/"$subnetmask
+   done
 }
 
+# Function to generate Class C addresses
 function class_c() {
-for i in $(eval echo {1..${OPTARG}}); do
+   for i in $(eval echo {1..${OPTARG}}); do
+     # Local variable to store IP class range 
+     local FLOOR=192
+     local RANGE=223
+     number=0
+     while [ "$number" -le $FLOOR ]; do
+       number=$RANDOM
+       let "number %= $RANGE"
+     done
+     subnetmask=$((RANDOM%16+15))
+     ip=$(printf "$number.%d.%d.%d" \
+       "$((RANDOM % 256))" "$((RANDOM % 256))" \
+       "$((RANDOM % 256))")
+       echo $ip"/"$subnetmask
+   done
+ }
 
-  local FLOOR=192
-  local RANGE=223
-  number=0
-
-  while [ "$number" -le $FLOOR ]; do
+# Function to generate Class D addresses
+function class_d() {
+  for i in $(eval echo {1..${OPTARG}}); do  
+    # Local variable to store IP class range
+    local FLOOR=224
+    local RANGE=239
+    number=0
+    while [ "$number" -le $FLOOR ]; do
       number=$RANDOM
       let "number %= $RANGE"
-  done
+    done
     subnetmask=$((RANDOM%16+15))
-      ip=$(printf "$number.%d.%d.%d" \
-        "$((RANDOM % 256))" "$((RANDOM % 256))" \
-        "$((RANDOM % 256))")
-        echo $ip"/"$subnetmask
+    ip=$(printf "$number.%d.%d.%d" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+      echo $ip"/"$subnetmask
   done
 }
 
-function class_d() {
-for i in $(eval echo {1..${OPTARG}}); do  
-  
-  local FLOOR=224
-  local RANGE=239
-  number=0
-
-  while [ "$number" -le $FLOOR ]; do
-    number=$RANDOM
-    let "number %= $RANGE"
-  done
-    subnetmask=$((RANDOM%16+15))
-      ip=$(printf "$number.%d.%d.%d" \
-        "$((RANDOM % 256))" "$((RANDOM % 256))" \
-        "$((RANDOM % 256))")
-        echo $ip"/"$subnetmask
-done
-}
-
+# Function to generate Class E addresses
 function class_e() {
-for i in $(eval echo {1..${OPTARG}}); do
-
-  local FLOOR=240
-  local RANGE=247
-  number=0
-
-  while [ "$number" -le $FLOOR ]; do
-    number=$RANDOM
-    let "number %= $RANGE"
-  done
+  for i in $(eval echo {1..${OPTARG}}); do
+    # Local variable to store IP class range
+    local FLOOR=240
+    local RANGE=247
+    number=0
+    while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+    done
     subnetmask=$((RANDOM%16+15))
-      ip=$(printf "$number.%d.%d.%d" \
-        "$((RANDOM % 256))" "$((RANDOM % 256))" \
-        "$((RANDOM % 256))")
-        echo $ip"/"$subnetmask
-done
+    ip=$(printf "$number.%d.%d.%d" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+    echo $ip"/"$subnetmask
+  done
 }
 
-while getopts n:a:b:c:d:e:h option; do
-  case "${option}" in
-        a)
-          class_a
-          ;;
-        b)
-          class_b
-          ;;
-        c)
-          class_c
-          ;;
-        d)
-          class_d
-          ;;
-        e)
-          class_e
-          ;;
-        n)
-          generate_ip
-          ;;
-        h)
-          help
-          ;;
-        *)
-          usage
-          ;;
-  esac
+# Set flag 0 for the -q argument below
+flag=0
+
+# Main body for taking arguments using getopts
+while getopts n:a:b:c:d:e:hq option; do
+   case "${option}" in
+         q)
+           flag=1
+           ;; 
+         a)
+           # Check if -q flag has been utilized
+           if [ "$flag" -eq 1 ]; then
+             class_a
+           else
+             printf "Generating ${OPTARG} Class A IPv4 addresses\n"
+             class_a
+           fi
+           ;;
+         b)
+           # Check if -q flag has been utilized
+           if [ "$flag" -eq 1 ]; then
+             class_b
+           else
+             printf "Generating ${OPTARG} Class B IPv4 addresses\n"
+             class_b
+           fi
+           ;;
+         c)
+           # Check if -q flag has been utilized
+           if [ "$flag" -eq 1 ]; then
+             class_c
+           else
+             printf "Generating ${OPTARG} Class C IPv4 addresses\n"
+             class_c
+           fi
+           ;;
+         d)
+           # Check if -q flag has been utilized
+           if [ "$flag" -eq 1 ]; then
+             class_d
+           else
+             printf "Generating ${OPTARG} Class D IPv4 addresses\n"
+             class_d
+           fi
+           ;;
+         e)
+           # Check if -q flag has been utilized
+           if [ "$flag" -eq 1 ]; then
+             class_e
+           else
+             printf "Generating ${OPTARG} Class E IPv4 addresses\n"
+             class_e
+           fi
+           ;;
+         n)
+           # Check if -q flag has been utilized
+           if [ "$flag" -eq 1 ]; then
+             generate_ip
+           else
+             printf "Generatin ${OPTARG} IPv4 addresses\n"
+             generate_ip
+           fi
+           ;;
+         h)
+           # Bring up the help menu
+           help
+           ;;
+         *)
+           # Catch-all to envoke usage function for any other arg
+           usage
+           ;;
+   esac
 done
