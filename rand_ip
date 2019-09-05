@@ -3,12 +3,16 @@
 #********************************#
 #                                #
 #    Written by Andras Marton    #
-#         August 22, 2019        #
-#                                #
+#         August 28, 2019        #
+#                           v2.2 #
 #********************************#
 
-# Random IP and CIDR subnet mask generator
-# v2.1
+
+###############################################################################
+#  Script to generate random IPv4 addresses with a random CIDR mask for the   #
+#+ last two octets. Utilize when learning subnetting to generate IP addresses #
+#+ for working out network information                         					      #
+###############################################################################
 
 # Usage instructions
 function usage() {
@@ -41,8 +45,16 @@ normal=$(tput sgr0)
 # a pool of all classes
 function generate_ip() {
   for i in $(eval echo {1..${OPTARG}}); do
+     # Local variables to store IP class range
+     local FLOOR=1
+     local RANGE=126
+     number=0
+     while [ "$number" -le $FLOOR ]; do
+	number=$RANDOM
+	let "number %= $RANGE"
+     done
      subnetmask=$((RANDOM%16+15))
-     ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 256))" \
+     ip=$(printf "$number.%d.%d.%d" \
        "$((RANDOM % 256))" "$((RANDOM % 256))" \
        "$((RANDOM % 256))")
        echo $ip"/"$subnetmask
@@ -52,8 +64,16 @@ function generate_ip() {
 # Function to generate Class A addresses
  function class_a() {
    for i in $(eval echo {1..${OPTARG}}); do  
+     # Local variables to store IP class range
+     local FLOOR=1
+     local RANGE=126
+     number=0
+     while [ "$number" -le $FLOOR ]; do
+	number=$RANDOM
+	let "number %= $RANGE"
+     done
      subnetmask=$((RANDOM%16+15))
-     ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 127))" \
+     ip=$(printf "$number.%d.%d.%d" \
        "$((RANDOM % 256))" "$((RANDOM % 256))" \
        "$((RANDOM % 256))")
        echo $ip"/"$subnetmask
@@ -62,7 +82,7 @@ function generate_ip() {
 
 # Function to generate Class B addresses
 function class_b() {
-   for i in $(eval echo {1..$OPTARG}}); do
+   for i in $(eval echo {1..${OPTARG}}); do
      # Local variables to store IP class range
      local FLOOR=128
      local RANGE=191
@@ -72,7 +92,7 @@ function class_b() {
        let "number %= $RANGE"
      done
      subnetmask=$((RANDOM%16+15))   
-     ip=$(printf "$number.%d.%d.%d" \     
+     ip=$(printf "$number.%d.%d.%d" \
        "$((RANDOM % 256))" "$((RANDOM % 256))" \
        "$((RANDOM % 256))")
        echo $ip"/"$subnetmask
@@ -82,7 +102,7 @@ function class_b() {
 # Function to generate Class C addresses
 function class_c() {
    for i in $(eval echo {1..${OPTARG}}); do
-     # Local variable to store IP class range 
+     # Local variable to store IP class range
      local FLOOR=192
      local RANGE=223
      number=0
@@ -136,13 +156,14 @@ function class_e() {
   done
 }
 
-# Set flag 0 for the -q argument below
+# Set flag to 0 for the -q argument below
 flag=0
 
 # Main body for taking arguments using getopts
 while getopts n:a:b:c:d:e:hq option; do
    case "${option}" in
          q)
+	   # Set quiet flag
            flag=1
            ;; 
          a)
@@ -150,8 +171,21 @@ while getopts n:a:b:c:d:e:hq option; do
            if [ "$flag" -eq 1 ]; then
              class_a
            else
-             printf "Generating ${OPTARG} Class A IPv4 addresses\n"
-             class_a
+	     # If input arg is 0 show error msg and exit
+	     if [ ${OPTARG} -eq 0 ]; then
+               printf "Invalid argument. Retry with a valid value\n"
+	       usage
+	       exit 1
+             fi
+	     # If input arg is 1 show header for single number
+	     if [ ${OPTARG} -eq 1 ]; then
+               printf "Generating ${OPTARG} Class A IPv4 address\n"
+               class_a
+	     # Otherwise show plular header
+             else
+               printf "Generating ${OPTARG} Class A IPv4 addresses\n"
+               class_a
+             fi
            fi
            ;;
          b)
@@ -159,17 +193,43 @@ while getopts n:a:b:c:d:e:hq option; do
            if [ "$flag" -eq 1 ]; then
              class_b
            else
-             printf "Generating ${OPTARG} Class B IPv4 addresses\n"
-             class_b
-           fi
+	     # If input arg is 0 show error msg and exit
+	     if [ ${OPTARG} -eq 0 ]; then
+	       printf "Invalid argument. Retry with a valid value\n"
+               usage
+               exit 1
+	     fi
+	     # If input arg is 1 show header for single number
+             if [ ${OPTARG} -eq 1 ]; then
+               printf "Generating ${OPTARG} Class B IPv4 address\n"
+	       class_b
+	     # Otherwise show plural header
+             else
+               printf "Generating ${OPTARG} Class B IPv4 addresses\n"
+               class_b
+             fi
+	   fi
            ;;
          c)
            # Check if -q flag has been utilized
            if [ "$flag" -eq 1 ]; then
              class_c
            else
-             printf "Generating ${OPTARG} Class C IPv4 addresses\n"
-             class_c
+	     # If input arg is 0 show error msg and exit
+	     if [ ${OPTARG} -eq 0 ]; then
+	       printf "Invalid argument. Retry with a valid value\n"
+	       usage
+	       exit 1
+	     fi
+	     # If input arg is 1 show header for single number
+	     if [ ${OPTARG} -eq 1 ]; then
+	       printf "Generating ${OPTARG} Class C IPv4 address\n"
+	       class_c
+	     # Otherwise show plural header
+	     else
+               printf "Generating ${OPTARG} Class C IPv4 addresses\n"
+               class_c
+	     fi
            fi
            ;;
          d)
@@ -177,26 +237,65 @@ while getopts n:a:b:c:d:e:hq option; do
            if [ "$flag" -eq 1 ]; then
              class_d
            else
-             printf "Generating ${OPTARG} Class D IPv4 addresses\n"
-             class_d
-           fi
+ 	     # If input arg is 0 show error msg and exit
+	     if [ ${OPTARG} -eq 0 ]; then
+		 printf "Invalid argument. Retry with a valid value\n"
+		 usage
+		 exit 1
+	     fi
+	     # If input arg is 1 show header for single number
+  	     if [ ${OPTARG} -eq 1 ]; then
+	       printf "Generating ${OPTARG} Class D IPv4 address\n"
+  	       class_d
+	     # Otherwise show plural header
+	     else	     
+               printf "Generating ${OPTARG} Class D IPv4 addresses\n"
+               class_d
+             fi
+       	   fi
            ;;
          e)
            # Check if -q flag has been utilized
            if [ "$flag" -eq 1 ]; then
              class_e
            else
-             printf "Generating ${OPTARG} Class E IPv4 addresses\n"
-             class_e
-           fi
+	     # If input arg is 0 show error msg and exit
+             if [ ${OPTARG} -eq 0 ]; then
+	       printf "Invalid argument. Retry with a valid value\n"
+  	       usage
+               exit 1
+	     fi
+	     # If input arg is 1 show header for single number
+	     if [ ${OPTARG} -eq 1 ]; then
+	       printf "Generating ${OPTARG} Class E IPv4 address\n"
+  	       class_e
+	     # Otherwise show plural header
+       	     else
+               printf "Generating ${OPTARG} Class E IPv4 addresses\n"
+               class_e
+             fi
+            fi
            ;;
          n)
            # Check if -q flag has been utilized
            if [ "$flag" -eq 1 ]; then
              generate_ip
            else
-             printf "Generatin ${OPTARG} IPv4 addresses\n"
-             generate_ip
+	     # If input arg is 0 show error msg and exit
+  	     if [ ${OPTARG} -eq 0 ]; then
+	       printf "Invalid argument. Retry with a valid value\n"
+               usage
+	       exit 1
+	     fi
+	     # If input arg is 1 show header for single number
+	     if [ ${OPTARG} -eq 1 ]; then
+	       printf "Generating ${OPTARG} IPv4 address\n"
+  	       generate_ip
+	     # Otherwise show plural header
+       	     else	       
+               printf "Generating ${OPTARG} IPv4 addresses\n"
+               generate_ip
+             fi
            fi
            ;;
          h)
@@ -204,7 +303,7 @@ while getopts n:a:b:c:d:e:hq option; do
            help
            ;;
          *)
-           # Catch-all to envoke usage function for any other arg
+           # Catch-all to capture outside parameter args & invoke usage function for any other arg
            usage
            ;;
    esac
