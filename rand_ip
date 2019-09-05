@@ -3,27 +3,44 @@
 #********************************#
 #                                #
 #    Written by Andras Marton    #
-#         August 30, 2019        #
+#         August 21, 2019        #
 #                                #
 #********************************#
 
 # Random IP and CIDR subnet mask generator
 # v1.2
 
-# defined positional parameter as global variable
-# to be read in generate_ip() function
-read_number="$2"
-
 # help menu
-usage() {
-  echo "Usage: rand_ip [OPTIONS]..."
-  echo "-n, --number      define the number of IPs to generate"
-  echo "-h, --help        display usage information"
+function usage() {
+echo "Usage: rand_ip [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
+}
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+function help() {
+echo "Usage: rand_ip [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
+echo "rand_ip generates random IPv4 addresses with CIDR mask."
+echo -e "CIDR masks are generated for the third and fourth octet.\n"
+echo -e "The options are as follows:\n"
+
+echo -e "${bold}-a${normal} \t Generates a given number of Class A addresses\n"
+
+echo -e "${bold}-b${normal} \t Generates a given number of Class B addresses\n"
+
+echo -e "${bold}-c${normal} \t Generates a given number of Class C addresses\n"
+
+echo -e "${bold}-d${normal} \t Generates a given number of Class D addresses\n"
+
+echo -e "${bold}-e${normal} \t Generates a given number of Class E addresses\n"
+
+echo -e "${bold}-n${normal} \t Generates a given number of random addresses 
+      \t    through all IPv4 classes\n"
+
+echo -e "${bold}-h${normal} \t Shows this help menu\n"
 }
 
-# algorithm for generating random IP and subnet mask
-generate_ip() {
-  for i in $(eval echo {1..$read_number}); do
+function generate_ip() {
+  for i in $(eval echo {1..${OPTARG}}); do
     subnetmask=$((RANDOM%16+15))
     ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 256))" \
       "$((RANDOM % 256))" "$((RANDOM % 256))" \
@@ -32,18 +49,118 @@ generate_ip() {
   done
 }
 
-case $1 in
-            -n | --number )
-                 # Check that input following -n is a number
-                 chk_number='^[0-9]+$'
-                 if ! [[ $read_number =~ $chk_number ]] ; then
-                   usage
-                 else 
-                   generate_ip
-                 fi
-                 ;;
-            -h | --help ) usage
-                 ;;
-             * ) usage
-                 ;;
-esac
+function class_a() {
+  for i in $(eval echo {1..${OPTARG}}); do  
+    subnetmask=$((RANDOM%16+15))
+    ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 127))" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+      echo $ip"/"$subnetmask
+done
+}
+
+function class_b() {
+  for i in $(eval echo {1..$OPTARG}}); do
+
+  local FLOOR=128
+  local RANGE=191
+  number=0
+
+  while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+  done
+  
+      subnetmask=$((RANDOM%16+15))
+      ip=$(printf "$number.%d.%d.%d" \
+        "$((RANDOM % 256))" "$((RANDOM % 256))" \
+        "$((RANDOM % 256))")
+        echo $ip"/"$subnetmask
+  done
+}
+
+function class_c() {
+for i in $(eval echo {1..${OPTARG}}); do
+
+  local FLOOR=192
+  local RANGE=223
+  number=0
+
+  while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+  done
+    subnetmask=$((RANDOM%16+15))
+      ip=$(printf "$number.%d.%d.%d" \
+        "$((RANDOM % 256))" "$((RANDOM % 256))" \
+        "$((RANDOM % 256))")
+        echo $ip"/"$subnetmask
+  done
+}
+
+function class_d() {
+for i in $(eval echo {1..${OPTARG}}); do  
+  
+  local FLOOR=224
+  local RANGE=239
+  number=0
+
+  while [ "$number" -le $FLOOR ]; do
+    number=$RANDOM
+    let "number %= $RANGE"
+  done
+    subnetmask=$((RANDOM%16+15))
+      ip=$(printf "$number.%d.%d.%d" \
+        "$((RANDOM % 256))" "$((RANDOM % 256))" \
+        "$((RANDOM % 256))")
+        echo $ip"/"$subnetmask
+done
+}
+
+function class_e() {
+for i in $(eval echo {1..${OPTARG}}); do
+
+  local FLOOR=240
+  local RANGE=247
+  number=0
+
+  while [ "$number" -le $FLOOR ]; do
+    number=$RANDOM
+    let "number %= $RANGE"
+  done
+    subnetmask=$((RANDOM%16+15))
+      ip=$(printf "$number.%d.%d.%d" \
+        "$((RANDOM % 256))" "$((RANDOM % 256))" \
+        "$((RANDOM % 256))")
+        echo $ip"/"$subnetmask
+done
+}
+
+while getopts n:a:b:c:d:e:h option; do
+  case "${option}" in
+        a)
+          class_a
+          ;;
+        b)
+          class_b
+          ;;
+        c)
+          class_c
+          ;;
+        d)
+          class_d
+          ;;
+        e)
+          class_e
+          ;;
+        n)
+          generate_ip
+          ;;
+        h)
+          help
+          ;;
+        *)
+          usage
+          ;;
+  esac
+done
