@@ -3,31 +3,47 @@
 #********************************#
 #                                #
 #    Written by Andras Marton    #
-#         July 28, 2019          #
+#         August 30, 2019        #
 #                                #
 #********************************#
 
 # Random IP and CIDR subnet mask generator
-# v1.1
+# v1.2
 
-usage () {
-  echo "rand_ip [-h | --help] [-n | --number #]"
+# defined positional parameter as global variable
+# to be read in generate_ip() function
+read_number="$2"
+
+# help menu
+usage() {
+  echo "Usage: rand_ip [OPTIONS]..."
+  echo "-n, --number      define the number of IPs to generate"
+  echo "-h, --help        display usage information"
+}
+
+# algorithm for generating random IP and subnet mask
+generate_ip() {
+  for i in $(eval echo {1..$read_number}); do
+    subnetmask=$((RANDOM%16+15))
+    ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+      echo $ip"/"$subnetmask
+  done
 }
 
 case $1 in
-  -n | --number )
-     for i in $(eval echo {1..$2}); do
-       subnetmask=$((RANDOM%16+15))
-       ip=$(printf "%d.%d.%d.%d" "$((RANDOM % 256))" \
-         "$((RANDOM % 256))" "$((RANDOM % 256))" \
-         "$((RANDOM % 256))")
-       echo $ip"/"$subnetmask
-     done
-     ;;
-  -h | --help )
-     usage
-     ;;
-  * ) 
-     usage
-     ;;
-     esac
+            -n | --number )
+                 # Check that input following -n is a number
+                 chk_number='^[0-9]+$'
+                 if ! [[ $read_number =~ $chk_number ]] ; then
+                   usage
+                 else 
+                   generate_ip
+                 fi
+                 ;;
+            -h | --help ) usage
+                 ;;
+             * ) usage
+                 ;;
+esac
