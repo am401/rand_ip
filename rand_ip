@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 #********************************#
@@ -7,25 +8,21 @@
 #                           v2.2 #
 #********************************#
 
-
 ###############################################################################
 #  Script to generate random IPv4 addresses with a random CIDR mask for the   #
 #+ last two octets. Utilize when learning subnetting to generate IP addresses #
-#+ for working out network information                         					      #
+#+ for working out network information					      #
 ###############################################################################
 
-# Usage instructions
 function usage() {
   echo "Usage: rand_ip [-q] [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
- }
+}
 
-# Help menu
 function help() {
-# Variables to bold the arguments 
-bold=$(tput bold)
-normal=$(tput sgr0)
+# Variables to bold & reset args within help menu
+  bold=$(tput bold)
+  normal=$(tput sgr0)
 
-# Print the following explanation for arg options
   echo "Usage: rand_ip [-q] [-a # | -b # | -c # | -d # | -e # | -n #] [-h]"
   echo "rand_ip generates random IPv4 addresses with CIDR mask."
   echo -e "CIDR masks are generated for the third and fourth octet.\n"
@@ -41,90 +38,33 @@ normal=$(tput sgr0)
   echo -e "${bold}-h${normal} \t Shows this help menu\n"
 }
 
-# Function to generate random IP addresses from 
-# a pool of all classes
+# Generate random IP from any class (A-E)
 function generate_ip() {
   for i in $(eval echo {1..${OPTARG}}); do
-     # Local variables to store IP class range
-     local FLOOR=1
-     local RANGE=126
-     number=0
-     while [ "$number" -le $FLOOR ]; do
-	number=$RANDOM
-	let "number %= $RANGE"
-     done
-     subnetmask=$((RANDOM%16+15))
-     ip=$(printf "$number.%d.%d.%d" \
-       "$((RANDOM % 256))" "$((RANDOM % 256))" \
-       "$((RANDOM % 256))")
+    # Local variables to store IP class range
+    local FLOOR=1
+    local RANGE=126
+    number=0
+    
+    while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+    done
+    subnetmask=$((RANDOM%16+15))
+    ip=$(printf "$number.%d.%d.%d" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
        echo $ip"/"$subnetmask
   done
 }
 
-# Function to generate Class A addresses
- function class_a() {
-   for i in $(eval echo {1..${OPTARG}}); do  
-     # Local variables to store IP class range
-     local FLOOR=1
-     local RANGE=126
-     number=0
-     while [ "$number" -le $FLOOR ]; do
-	number=$RANDOM
-	let "number %= $RANGE"
-     done
-     subnetmask=$((RANDOM%16+15))
-     ip=$(printf "$number.%d.%d.%d" \
-       "$((RANDOM % 256))" "$((RANDOM % 256))" \
-       "$((RANDOM % 256))")
-       echo $ip"/"$subnetmask
- done
-}
-
-# Function to generate Class B addresses
-function class_b() {
-   for i in $(eval echo {1..${OPTARG}}); do
-     # Local variables to store IP class range
-     local FLOOR=128
-     local RANGE=191
-     number=0
-     while [ "$number" -le $FLOOR ]; do
-       number=$RANDOM
-       let "number %= $RANGE"
-     done
-     subnetmask=$((RANDOM%16+15))   
-     ip=$(printf "$number.%d.%d.%d" \
-       "$((RANDOM % 256))" "$((RANDOM % 256))" \
-       "$((RANDOM % 256))")
-       echo $ip"/"$subnetmask
-   done
-}
-
-# Function to generate Class C addresses
-function class_c() {
-   for i in $(eval echo {1..${OPTARG}}); do
-     # Local variable to store IP class range
-     local FLOOR=192
-     local RANGE=223
-     number=0
-     while [ "$number" -le $FLOOR ]; do
-       number=$RANDOM
-       let "number %= $RANGE"
-     done
-     subnetmask=$((RANDOM%16+15))
-     ip=$(printf "$number.%d.%d.%d" \
-       "$((RANDOM % 256))" "$((RANDOM % 256))" \
-       "$((RANDOM % 256))")
-       echo $ip"/"$subnetmask
-   done
- }
-
-# Function to generate Class D addresses
-function class_d() {
+function class_a() {
   for i in $(eval echo {1..${OPTARG}}); do  
-    # Local variable to store IP class range
-    local FLOOR=224
-    local RANGE=239
+    # Local variables to store IP class range
+    local FLOOR=1
+    local RANGE=126
     number=0
+     
     while [ "$number" -le $FLOOR ]; do
       number=$RANDOM
       let "number %= $RANGE"
@@ -137,13 +77,70 @@ function class_d() {
   done
 }
 
-# Function to generate Class E addresses
+function class_b() {
+  for i in $(eval echo {1..${OPTARG}}); do
+    # Local variables to store IP class range
+    local FLOOR=128
+    local RANGE=191
+    number=0
+   
+    while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+    done
+    subnetmask=$((RANDOM%16+15))   
+    ip=$(printf "$number.%d.%d.%d" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+       echo $ip"/"$subnetmask
+   done
+}
+
+function class_c() {
+  for i in $(eval echo {1..${OPTARG}}); do
+    # Local variable to store IP class range
+    local FLOOR=192
+    local RANGE=223
+    number=0
+    
+    while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+    done
+    subnetmask=$((RANDOM%16+15))
+    ip=$(printf "$number.%d.%d.%d" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+      echo $ip"/"$subnetmask
+  done
+}
+
+function class_d() {
+  for i in $(eval echo {1..${OPTARG}}); do  
+    # Local variable to store IP class range
+    local FLOOR=224
+    local RANGE=239
+    number=0
+    
+    while [ "$number" -le $FLOOR ]; do
+      number=$RANDOM
+      let "number %= $RANGE"
+    done
+    subnetmask=$((RANDOM%16+15))
+    ip=$(printf "$number.%d.%d.%d" \
+      "$((RANDOM % 256))" "$((RANDOM % 256))" \
+      "$((RANDOM % 256))")
+      echo $ip"/"$subnetmask
+  done
+}
+
 function class_e() {
   for i in $(eval echo {1..${OPTARG}}); do
     # Local variable to store IP class range
     local FLOOR=240
     local RANGE=247
     number=0
+    
     while [ "$number" -le $FLOOR ]; do
       number=$RANDOM
       let "number %= $RANGE"
@@ -159,40 +156,47 @@ function class_e() {
 # Set flag to 0 for the -q argument below
 flag=0
 
+# Check if arguments have been passed to rand_ip - if not print usage()
+if [[ $# -eq 0 ]] ; then
+    usage
+    exit 0
+fi
+
 # Main body for taking arguments using getopts
 while getopts n:a:b:c:d:e:hq option; do
-   case "${option}" in
-         q)
-	   # Set quiet flag
-           flag=1
-           ;; 
-         a)
-           # Check if -q flag has been utilized
-           if [ "$flag" -eq 1 ]; then
-             class_a
-           else
-	     # If input arg is 0 show error msg and exit
-	     if [ ${OPTARG} -eq 0 ]; then
-               printf "Invalid argument. Retry with a valid value\n"
-	       usage
-	       exit 1
-             fi
-	     # If input arg is 1 show header for single number
-	     if [ ${OPTARG} -eq 1 ]; then
-               printf "Generating ${OPTARG} Class A IPv4 address\n"
-               class_a
-	     # Otherwise show plular header
-             else
-               printf "Generating ${OPTARG} Class A IPv4 addresses\n"
-               class_a
-             fi
-           fi
-           ;;
-         b)
-           # Check if -q flag has been utilized
-           if [ "$flag" -eq 1 ]; then
-             class_b
-           else
+  case "${option}" in
+    q)
+      # If -q argument passed, set quiet flag
+      flag=1
+      ;; 
+    a)
+        # If input arg is 0 show error msg and exit
+        if [ ${OPTARG} -eq 0 ]; then
+          printf "Invalid argument. Retry with a valid value!\n"
+	  usage
+	  exit 1
+	else
+	  # Check if -q flag has been utilized
+          if [ "$flag" -eq 1 ]; then
+          class_a
+	  fi
+      else
+        fi
+	
+        # If input arg is 1 show header for single number else plural
+        if [ ${OPTARG} -eq 1 ]; then
+          printf "Generating ${OPTARG} Class A IPv4 address\n"
+          class_a	     
+        else
+         printf "Generating ${OPTARG} Class A IPv4 addresses\n"
+         class_a
+      fi
+      ;;
+    b)
+      # Check if -q flag has been utilized
+      if [ "$flag" -eq 1 ]; then
+        class_b
+      else
 	     # If input arg is 0 show error msg and exit
 	     if [ ${OPTARG} -eq 0 ]; then
 	       printf "Invalid argument. Retry with a valid value\n"
